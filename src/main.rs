@@ -49,7 +49,8 @@ async fn manual_hello() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let mut  initial_vec:Vec<Block>=Vec::new();
-    initial_vec.push(Block::new());
+    let mut genesisBlock=Block::new();
+    initial_vec.push(genesisBlock);
     let blockchain = web::Data::new(AppState {
         blockchain: Mutex::new(initial_vec),
     });

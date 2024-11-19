@@ -1,6 +1,9 @@
+use std::thread::sleep;
 use serde::{Deserialize, Serialize};
 use sha256::digest;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use crate::util::mine;
+use crate::util::mine::DIFFICULTY;
 
 #[derive(Serialize, Deserialize,Debug,Clone)]
 pub struct Block {
@@ -9,17 +12,26 @@ pub struct Block {
     bpm: u64,
     hash: String,
     prev_hash: String,
+    difficulty: u32,
+    nonce:String
 }
 
 impl Block {
     pub fn new()->Block {
-        Block {
-            hash: "".to_string(),
+        let mut block:Block=Block{
+            hash: String::new(),
             index: 0,
             bpm: 0,
             prev_hash: "".to_string(),
-            timestamp: 0,
-        }
+            timestamp: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis(),
+            nonce:"".to_string(),
+            difficulty:DIFFICULTY
+        };
+        block.hash=calculate_hash(&block);
+       block
     }
     pub fn generate_block(&mut self, old_block: &Block, bpm: u64) -> Block {
         let now = SystemTime::now()
@@ -32,12 +44,27 @@ impl Block {
             bpm,
             prev_hash: old_block.hash.to_string(),
             hash: "".to_string(),
+            difficulty:DIFFICULTY,
+            nonce:"".to_string()
         };
-        let hash = calculate_hash(&block);
-        block.hash = hash;
+        for i in 0.. {
+            block.nonce = format!("{:x}", i);
+            let new_hash = calculate_hash(&block);
+            if !mine::is_hash_valid(&new_hash, block.difficulty as usize) {
+                println!("{} do more work!", new_hash);
+                println!("{}", format!("{:x}", i));
+                sleep(Duration::from_secs(1));
+                continue;
+            } else {
+                println!("{} work done!", new_hash);
+                block.hash = new_hash;
+                break;
+            }
+        }
+        // let hash = calculate_hash(&block);
+        // block.hash = hash;
         block
     }
-
     // pub fn replace_chain(new_blocks:Vec<Block>,mut chain:web::Data<AppState>){
     //     let mut blockchain=chain.blockchain.lock().unwrap();
     //     if new_blocks.len() > blockchain.len(){
@@ -54,6 +81,8 @@ pub fn calculate_hash( block:&Block) -> String {
     record.push_str(&block.timestamp.to_string());
     record.push_str(&block.bpm.to_string());
     record.push_str(&block.prev_hash);
+    record.push_str(&block.nonce);
+    record.push_str(&block.difficulty.to_string());
     let val = digest(record);
     val
 }
@@ -68,5 +97,6 @@ pub fn block_valid(block:&Block,  old_block: &Block) -> bool {
     if hash != block.hash {
         return false;
     }
+
     true
 }
