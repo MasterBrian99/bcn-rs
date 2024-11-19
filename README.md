@@ -18,7 +18,10 @@ curl localhost:8080
 
 ## showcase
 
-[![](./assets/screen_show.mp4)](./assets/screen_show.mp4)
+
+
+
+https://github.com/user-attachments/assets/f5185f16-22fa-48f6-984b-1a0336caf035
 
 
 
