@@ -51,12 +51,11 @@ impl Block {
             block.nonce = format!("{:x}", i);
             let new_hash = calculate_hash(&block);
             if !mine::is_hash_valid(&new_hash, block.difficulty as usize) {
-                println!("{} do more work!", new_hash);
-                println!("{}", format!("{:x}", i));
+                println!("{} mining !", new_hash);
                 sleep(Duration::from_secs(1));
                 continue;
             } else {
-                println!("{} work done!", new_hash);
+                println!("{} completed !", new_hash);
                 block.hash = new_hash;
                 break;
             }

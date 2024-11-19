@@ -22,7 +22,7 @@ struct Message {
     bpm: u64,
 }
 #[post("/")]
-async fn write_block(message: web::Json<Message>,app_state: web::Data<AppState>) -> Result<HttpResponse, Error> {
+async fn write_block(message: web::Json<Message>,app_state: web::Data<AppState>) ->  Result<impl Responder, Error> {
     let mut block=Block::new();
 
     let mut blockchain=app_state.blockchain.lock().unwrap();
@@ -39,7 +39,10 @@ async fn write_block(message: web::Json<Message>,app_state: web::Data<AppState>)
     //     &block.generate_block(&old_block,message.bpm);
     // }
     // println!("block {:?}",block);
-    Ok(HttpResponse::Created().body(format!("Hey there! {:?}", serde_json::to_string(&block))))
+    // let json = serde_json::to_string(&block).expect("Serialization failed");
+
+    // Ok(HttpResponse::Created().body(json))
+    Ok(web::Json(block))
 }
 
 async fn manual_hello() -> impl Responder {
@@ -49,8 +52,8 @@ async fn manual_hello() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let mut  initial_vec:Vec<Block>=Vec::new();
-    let mut genesisBlock=Block::new();
-    initial_vec.push(genesisBlock);
+    let  genesis_block =Block::new();
+    initial_vec.push(genesis_block);
     let blockchain = web::Data::new(AppState {
         blockchain: Mutex::new(initial_vec),
     });
